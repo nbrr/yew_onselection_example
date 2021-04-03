@@ -51,7 +51,7 @@ impl Component for Model {
 
         html! {
             <div>
-                <div onselectionchange=self.link.callback(|_| Msg::SelectionChange)>
+                <div onmousemove=self.link.callback(|_| Msg::SelectionChange)>
                     {t}
                 </div>
                 <hr/>
