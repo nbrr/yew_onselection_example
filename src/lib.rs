@@ -2,22 +2,24 @@
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 
-struct Model;
+struct Model {
+    link: ComponentLink<Self>,
+}
 
 enum Msg {
-    SelectionChange
+    SelectionChange,
 }
 
 impl Component for Model {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::info!("Create");
-        Self {}
+        Self { link }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
         log::info!("Update");
         true
     }
@@ -40,16 +42,16 @@ impl Component for Model {
         Suspendisse tincidunt non purus ac laoreet.
         Maecenas malesuada dignissim dignissim.";
 
-        let selection =  yew::utils::document().get_selection().unwrap().unwrap();
+        let selection = yew::utils::document().get_selection().unwrap().unwrap();
         let anchor_offset = selection.anchor_offset() as usize;
         let focus_offset = selection.focus_offset() as usize;
         let beg = anchor_offset.min(focus_offset);
         let end = anchor_offset.max(focus_offset);
-        let selected_t : String = t.clone().chars().skip(beg).take(end-beg).collect();
+        let selected_t: String = t.clone().chars().skip(beg).take(end - beg).collect();
 
         html! {
             <div>
-                <div>
+                <div onselectionchange=self.link.callback(|_| Msg::SelectionChange)>
                     {t}
                 </div>
                 <hr/>
