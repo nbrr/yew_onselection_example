@@ -11,7 +11,7 @@ struct Model {
 }
 
 enum Msg {
-    SelectionChange
+    SelectionChange,
 }
 
 impl Component for Model {
@@ -21,8 +21,9 @@ impl Component for Model {
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::info!("Create");
 
-        let selectionchange_callback = link.callback(|_:()| Msg::SelectionChange);
-        let selectionchange_callback = Box::new(move || selectionchange_callback.emit(())) as Box<dyn FnMut()>;
+        let selectionchange_callback = link.callback(|_: ()| Msg::SelectionChange);
+        let selectionchange_callback =
+            Box::new(move || selectionchange_callback.emit(())) as Box<dyn FnMut()>;
         let selectionchange_callback = Closure::wrap(selectionchange_callback);
 
         Self {
@@ -44,10 +45,12 @@ impl Component for Model {
         log::info!("View");
 
         let document = yew::utils::document();
-        document.add_event_listener_with_callback(
-            "selectionchange",
-            self.selectionchange_callback.as_ref().unchecked_ref(),
-        ).unwrap();
+        document
+            .add_event_listener_with_callback(
+                "selectionchange",
+                self.selectionchange_callback.as_ref().unchecked_ref(),
+            )
+            .unwrap();
 
         let t = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         Proin porta placerat nibh, sed pulvinar massa congue nec.
@@ -66,7 +69,7 @@ impl Component for Model {
         let focus_offset = selection.focus_offset() as usize;
         let beg = anchor_offset.min(focus_offset);
         let end = anchor_offset.max(focus_offset);
-        let selected_t : String = t.clone().chars().skip(beg).take(end-beg).collect();
+        let selected_t: String = t.clone().chars().skip(beg).take(end - beg).collect();
 
         html! {
             <div>
