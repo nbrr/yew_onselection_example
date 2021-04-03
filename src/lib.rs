@@ -2,19 +2,33 @@
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 
-struct Model;
+use wasm_bindgen::closure::Closure;
+use wasm_bindgen::JsCast;
+
+struct Model {
+    link: ComponentLink<Self>,
+    selectionchange_callback: Closure<dyn FnMut()>,
+}
 
 enum Msg {
     SelectionChange
 }
 
 impl Component for Model {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
+    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         log::info!("Create");
-        Self {}
+
+        let selectionchange_callback = link.callback(|_:()| Msg::SelectionChange);
+        let selectionchange_callback = Box::new(move || selectionchange_callback.emit(())) as Box<dyn FnMut()>;
+        let selectionchange_callback = Closure::wrap(selectionchange_callback);
+
+        Self {
+            link,
+            selectionchange_callback,
+        }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -28,6 +42,13 @@ impl Component for Model {
 
     fn view(&self) -> Html {
         log::info!("View");
+
+        let document = yew::utils::document();
+        document.add_event_listener_with_callback(
+            "selectionchange",
+            self.selectionchange_callback.as_ref().unchecked_ref(),
+        ).unwrap();
+
         let t = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         Proin porta placerat nibh, sed pulvinar massa congue nec.
         Vestibulum rhoncus tincidunt hendrerit.
@@ -40,7 +61,7 @@ impl Component for Model {
         Suspendisse tincidunt non purus ac laoreet.
         Maecenas malesuada dignissim dignissim.";
 
-        let selection =  yew::utils::document().get_selection().unwrap().unwrap();
+        let selection = document.get_selection().unwrap().unwrap();
         let anchor_offset = selection.anchor_offset() as usize;
         let focus_offset = selection.focus_offset() as usize;
         let beg = anchor_offset.min(focus_offset);
